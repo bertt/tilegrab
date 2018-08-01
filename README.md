@@ -16,4 +16,4 @@ Parameters in the program.cs:
 - bounding box (xmin, ymin, xmax, ymax)
 - url remote server
 
-Tiles are generated in output directory.
+Tiles are generated in output directory for levels 0..17.
