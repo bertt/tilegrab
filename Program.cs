@@ -25,8 +25,9 @@ namespace tilegrab
             {
                 var di = Directory.CreateDirectory($"tiles{sep}{t.Z}{sep}{t.X}");
                 var filename = di.FullName + sep + t.Y + "." + extension;
-                wc.DownloadFile(url + $"{ t.Z}/{ t.X}/{t.Y}.{extension}", filename);
-                Console.WriteLine(url);
+                var downloadfile = url + $"{ t.Z}/{ t.X}/{t.Y}.{extension}";
+                wc.DownloadFile(downloadfile, filename);
+                Console.WriteLine(downloadfile);
 
             }
             wc.Dispose();
