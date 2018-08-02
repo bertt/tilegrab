@@ -21,16 +21,20 @@ namespace tilegrab
             var tiles = TileHelper.GetTilesInArea(xmin, ymin, xmax, ymax);
             var sep = Path.DirectorySeparatorChar;
             var wc = new WebClient();
+
             foreach (var t in tiles)
             {
                 var di = Directory.CreateDirectory($"tiles{sep}{t.Z}{sep}{t.X}");
                 var filename = di.FullName + sep + t.Y + "." + extension;
                 var downloadfile = url + $"{ t.Z}/{ t.X}/{t.Y}.{extension}";
-                wc.DownloadFile(downloadfile, filename);
+                wc.DownloadFile(new Uri(downloadfile), filename);
                 Console.WriteLine(downloadfile);
-
             }
+
             wc.Dispose();
+            // file metadata.json is needed for mb-util tool
+            File.Copy("metadata.json", $"tiles{sep}/metadata.json", true);
+            Console.WriteLine("TileGrab is ready... Press any key to exit");
             Console.ReadKey();
         }
     }
