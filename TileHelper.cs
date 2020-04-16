@@ -5,10 +5,10 @@ namespace tilegrab
 {
     public class TileHelper
     {
-        public static List<Tile> GetTilesInArea(double minx, double miny, double maxx, double maxy)
+        public static List<Tile> GetTilesInArea(double minx, double miny, double maxx, double maxy, int levelFrom, int levelTo)
         {
             var res = new List<Tile>();
-            for (var z = 0; z <= 17; z++)
+            for (var z = levelFrom; z <= levelTo; z++)
             {
                 var tile = Tilebelt.PointToTile(minx, miny, z);
                 var tile1 = Tilebelt.PointToTile(maxx, maxy, z);

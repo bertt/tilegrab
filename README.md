@@ -11,13 +11,26 @@ $ dotnet restore
 $ dotnet run
 ````
 
-Parameters in the program.cs:
+## Sample output
+
+```
+total tiles: 4066
+tile 4066/4066 - 100.00%
+Total duration: 72.2130713
+Request/tile: 0.01776022412690605
+TileGrab is ready...
+```
+
+## Parameters 
+
+Use parameters in the program.cs:
 
 - bounding box (xmin, ymin, xmax, ymax)
+- Z level from and to
 - url remote server
 - format of tiles (like 'png' or 'pbf')
 
-Tiles are generated in output directory.
+Tiles are generated in output directory. File metadata.json is also copied from the server.
 
 
 ## MBTiles support
