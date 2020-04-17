@@ -1,6 +1,6 @@
 # tilegrab
 
-Grabs the tiles from remote server and create a local tilecache
+Grabs the tiles from remote server and create a local mbtile file.
 
 ## Installation
 
@@ -30,13 +30,4 @@ Use parameters in the program.cs:
 - url remote server
 - format of tiles (like 'png' or 'pbf')
 
-Tiles are generated in output directory. File metadata.json is also copied from the server.
-
-
-## MBTiles support
-
-If you want to generate a MBTile file from the output files, use the command <a href="https://github.com/mapbox/mbutil">mb-util</a> as follows:
-
-```
-$ mb-util tiles test2.mbtiles --image_format=pbf
-```
+Mbtile file is generated in output directory. 

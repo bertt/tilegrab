@@ -9,8 +9,19 @@ namespace tilegrab
 {
     class Program
     {
+
         async static Task Main(string[] args)
         {
+            var db = "test.mbtiles";
+            if (File.Exists(db))
+            {
+                File.Delete(db);
+            }
+            var schema = File.ReadAllText("schema.sql");
+
+            var conn = Sqlite.CreateDatabase(db, schema);
+            conn.Open();
+
             // for complete nl
             //var xmin = 3.31497114423;
             //var ymin = 50.803721015;
@@ -31,50 +42,39 @@ namespace tilegrab
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(url + "/metadata.json");
+            var content = await response.Content.ReadAsStringAsync();
+            var metadata = System.Text.Json.JsonSerializer.Deserialize<Metadata>(content);
+            Sqlite.InsertMetadata(conn, metadata);
+
             var tiles = TileHelper.GetTilesInArea(xmin, ymin, xmax, ymax, levelFrom, levelTo);
             Console.WriteLine("total tiles: " + tiles.Count);
             var sep = Path.DirectorySeparatorChar;
-            var httpClient = new HttpClient();
-
-            Downloadfile(httpClient, $"tiles{sep}/metadata.json", url + "/metadata.json");
-
             var i = 1;
             tiles.AsParallel().ForAll(t =>
-            {
+            { 
                 i++;
                 var perc = Math.Round(((double)i / tiles.Count) * 100, 2);
                 Console.Write($"\rtile {i}/{tiles.Count} - {perc:F}%");
 
-                var di = Directory.CreateDirectory($"tiles{sep}{t.Z}{sep}{t.X}");
-                var filename = di.FullName + sep + t.Y + "." + extension;
                 var downloadfile = url + $"{ t.Z}/{ t.X}/{t.Y}.{extension}";
-
-                Downloadfile(httpClient, filename, downloadfile);
-
+                var responseResult = httpClient.GetAsync(downloadfile).Result;
+                responseResult.EnsureSuccessStatusCode();
+                var content1 = responseResult.Content.ReadAsByteArrayAsync().Result;
+                var res = Sqlite.WriteTile(conn, t, content1);
             });
 
             httpClient.Dispose();
+            conn.Close();
             Console.WriteLine();
 
             stopwatch.Stop();
             Console.WriteLine("Total duration: " + stopwatch.Elapsed.TotalSeconds);
-            Console.WriteLine("Request/tile: " + stopwatch.Elapsed.TotalSeconds/tiles.Count);
-
+            Console.WriteLine("Request/tile: " + stopwatch.Elapsed.TotalSeconds / tiles.Count);
             Console.WriteLine("TileGrab is ready... Press any key to exit");
             Console.ReadKey();
-        }
-
-        private static void Downloadfile(HttpClient httpClient, string filename, string downloadfile)
-        {
-            var responseResult = httpClient.GetAsync(downloadfile);
-            using (var memStream = responseResult.Result.Content.ReadAsStreamAsync().Result)
-            {
-                using (var fileStream = File.Create($"{filename}"))
-                {
-                    memStream.CopyTo(fileStream);
-                }
-
-            }
         }
     }
 }
