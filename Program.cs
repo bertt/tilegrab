@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,27 +14,14 @@ namespace tilegrab
 
         async static Task Main(string[] args)
         {
-            var db = "test.mbtiles";
-            if (File.Exists(db))
-            {
-                File.Delete(db);
-            }
-            var schema = File.ReadAllText("schema.sql");
+            var city = "rotterdam";
+            var bbox = GetBBox(city);
+            var db = $"{city}.mbtiles";
+            var xmin = Double.Parse(bbox.Split(",")[0]);
+            var ymin = Double.Parse(bbox.Split(",")[1]);
+            var xmax = Double.Parse(bbox.Split(",")[2]);
+            var ymax = Double.Parse(bbox.Split(",")[3]);
 
-            var conn = Sqlite.CreateDatabase(db, schema);
-            conn.Open();
-
-            // for complete nl
-            //var xmin = 3.31497114423;
-            //var ymin = 50.803721015;
-            //var xmax = 7.09205325687;
-            //var ymax = 53.5104033474;
-
-            // bounding box (amsterdam as sample) tip use bboxfinder.com
-            var xmin = 4.814930;
-            var ymin = 52.320757;
-            var xmax = 4.988308;
-            var ymax = 52.396763;
             var levelFrom = 0;
             var levelTo = 17;
 
@@ -44,10 +32,24 @@ namespace tilegrab
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            if (File.Exists(db))
+            {
+                File.Delete(db);
+            }
+            var schema = File.ReadAllText("schema.sql");
+
+            var conn = Sqlite.CreateDatabase(db, schema);
+            conn.Open();
+
+
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(url + "/metadata.json");
             var content = await response.Content.ReadAsStringAsync();
             var metadata = System.Text.Json.JsonSerializer.Deserialize<Metadata>(content);
+            metadata.bounds = bbox;
+            metadata.center = $"{xmin + (xmax - xmin) / 2},{ymin + (ymax - ymin)/2},{levelTo}";
+            metadata.name = city;
+            metadata.description = city;
             Sqlite.InsertMetadata(conn, metadata);
 
             var tiles = TileHelper.GetTilesInArea(xmin, ymin, xmax, ymax, levelFrom, levelTo);
@@ -77,8 +79,26 @@ namespace tilegrab
             stopwatch.Stop();
             Console.WriteLine("Total duration: " + stopwatch.Elapsed.TotalSeconds);
             Console.WriteLine("Request/tile: " + stopwatch.Elapsed.TotalSeconds / tiles.Count);
-            Console.WriteLine("TileGrab is ready... Press any key to exit");
-            Console.ReadKey();
+            Console.WriteLine("TileGrab is ready...");
+        }
+
+        private static string GetBBox(string city)
+        {
+            var dict = new Dictionary<string, string>();
+            dict.Add("utrecht", "4.933,52.001,5.303,52.184");
+            dict.Add("maastricht", "5.631,50.789,5.773,50.914");
+            dict.Add("rotterdam", "3.911, 51.737, 4.784, 52.109");
+            dict.Add("thehague", "4.183, 52.006, 4.427, 52.136");
+            dict.Add("amsterdam", "4.814930,52.320757,4.988308, 52.396763");
+
+            return dict[city];
+
+            // for complete nl
+            //var xmin = 3.31497114423;
+            //var ymin = 50.803721015;
+            //var xmax = 7.09205325687;
+            //var ymax = 53.5104033474;
+
         }
     }
 }

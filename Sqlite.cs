@@ -43,10 +43,8 @@ namespace tilegrab
             var tmsY = Math.Pow(2, t.Z) - 1 - t.Y;
             var cmdInsert = conn.CreateCommand();
             cmdInsert.CommandType = CommandType.Text;
-            cmdInsert.CommandText = string.Join("; ",
-                $"INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES ({t.Z}, {t.X}, {tmsY}, @bytes11)"
-            );
-            cmdInsert.Parameters.AddWithValue("@bytes11", data);
+            cmdInsert.CommandText = $"INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES ({t.Z}, {t.X}, {tmsY}, @bytes)";
+            cmdInsert.Parameters.AddWithValue("@bytes", data);
             int rowsAffected = cmdInsert.ExecuteNonQuery();
             return rowsAffected;
         }
