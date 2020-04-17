@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -61,9 +62,12 @@ namespace tilegrab
 
                 var downloadfile = url + $"{ t.Z}/{ t.X}/{t.Y}.{extension}";
                 var responseResult = httpClient.GetAsync(downloadfile).Result;
-                responseResult.EnsureSuccessStatusCode();
-                var content1 = responseResult.Content.ReadAsByteArrayAsync().Result;
-                var res = Sqlite.WriteTile(conn, t, content1);
+                if (responseResult.StatusCode == HttpStatusCode.OK)
+                {
+                    var content1 = responseResult.Content.ReadAsByteArrayAsync().Result;
+                    var res = Sqlite.WriteTile(conn, t, content1);
+
+                }
             });
 
             httpClient.Dispose();
