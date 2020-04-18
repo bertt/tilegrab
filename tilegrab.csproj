@@ -6,15 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bertt.MBTiles" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.112" />
     <PackageReference Include="tilebelt" Version="1.3.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="schema.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

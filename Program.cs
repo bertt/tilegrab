@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MBTiles.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +15,7 @@ namespace tilegrab
 
         async static Task Main(string[] args)
         {
-            var city = "rotterdam";
+            var city = "amsterdam";
             var bbox = GetBBox(city);
             var db = $"{city}.mbtiles";
             var xmin = Double.Parse(bbox.Split(",")[0]);
@@ -36,11 +37,6 @@ namespace tilegrab
             {
                 File.Delete(db);
             }
-            var schema = File.ReadAllText("schema.sql");
-
-            var conn = Sqlite.CreateDatabase(db, schema);
-            conn.Open();
-
 
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(url + "/metadata.json");
@@ -50,12 +46,13 @@ namespace tilegrab
             metadata.center = $"{xmin + (xmax - xmin) / 2},{ymin + (ymax - ymin)/2},{levelTo}";
             metadata.name = city;
             metadata.description = city;
-            Sqlite.InsertMetadata(conn, metadata);
+            var conn = MBTilesWriter.CreateDatabase(db, metadata);
 
             var tiles = TileHelper.GetTilesInArea(xmin, ymin, xmax, ymax, levelFrom, levelTo);
             Console.WriteLine("total tiles: " + tiles.Count);
             var sep = Path.DirectorySeparatorChar;
             var i = 1;
+            conn.Open();
             tiles.AsParallel().ForAll(t =>
             { 
                 i++;
@@ -67,7 +64,7 @@ namespace tilegrab
                 if (responseResult.StatusCode == HttpStatusCode.OK)
                 {
                     var content1 = responseResult.Content.ReadAsByteArrayAsync().Result;
-                    var res = Sqlite.WriteTile(conn, t, content1);
+                    MBTilesWriter.WriteTile(conn, t, content1);
 
                 }
             });
