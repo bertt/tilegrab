@@ -38,6 +38,11 @@ namespace tilegrab
                 File.Delete(db);
             }
 
+            if (!Directory.Exists("tiles"))
+            {
+                Directory.CreateDirectory("tiles");
+            }
+
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(url + "/metadata.json");
             var content = await response.Content.ReadAsStringAsync();
@@ -53,7 +58,7 @@ namespace tilegrab
             var sep = Path.DirectorySeparatorChar;
             var i = 1;
             conn.Open();
-            tiles.AsParallel().ForAll(t =>
+            tiles.AsParallel().ForAll(async t =>
             { 
                 i++;
                 var perc = Math.Round(((double)i / tiles.Count) * 100, 2);
@@ -63,9 +68,14 @@ namespace tilegrab
                 var responseResult = httpClient.GetAsync(downloadfile).Result;
                 if (responseResult.StatusCode == HttpStatusCode.OK)
                 {
-                    var content1 = responseResult.Content.ReadAsByteArrayAsync().Result;
+                    var content1 = await responseResult.Content.ReadAsByteArrayAsync();
+                    // File.WriteAllBytes("tiles/" + Path.GetFileName(downloadfile), content1);
                     MBTilesWriter.WriteTile(conn, t, content1);
 
+                }
+                else
+                {
+                    var q = 0;
                 }
             });
 
@@ -84,9 +94,9 @@ namespace tilegrab
             var dict = new Dictionary<string, string>();
             dict.Add("utrecht", "4.933,52.001,5.303,52.184");
             dict.Add("maastricht", "5.631,50.789,5.773,50.914");
-            dict.Add("rotterdam", "3.911, 51.737, 4.784, 52.109");
-            dict.Add("thehague", "4.183, 52.006, 4.427, 52.136");
-            dict.Add("amsterdam", "4.814930,52.320757,4.988308, 52.396763");
+            dict.Add("rotterdam", "3.911,51.737,4.784,52.109");
+            dict.Add("thehague", "4.183,52.006,4.427,52.136");
+            dict.Add("amsterdam", "4.814930,52.320757,4.988308,52.396763");
 
             return dict[city];
 
