@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,15 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bertt.MBTiles" Version="2.0.0" />
+    <PackageReference Include="bertt.MBTiles" Version="2.0.2" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.116" />
     <PackageReference Include="tilebelt" Version="1.3.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="schema.sql">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
